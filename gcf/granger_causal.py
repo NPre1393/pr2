@@ -14,6 +14,8 @@ import tensorflow as tf
 import math
 import itertools
 
+import networkx as nx
+
 import collections
 import pickle
 from sklearn.metrics import mean_squared_error
@@ -51,6 +53,24 @@ def regression_model(lag, ypast_dim1):
     model.compile(loss='mse', optimizer='adam', metrics=['mae'])
     # model.compile(loss='mse', optimizer='adam', metrics=['msd'])
     return model
+
+def fstat(rmse_ur, rmse_r):
+    return (rmse_r-rmse_ur)/rmse_ur
+
+def construct_graph(rmse_ur, rmse_r):
+    rmse_keys = rmse_ur.keys()
+    graph_dict = collections.defaultdict(dict)
+    for k in rmse_keys:
+        cand = rmse_keys[k]
+        graph_dict[k] = []
+        for c in cand:
+            fs = fstat(rmse_ur[k][c], rmse_r[k][c])
+            if fs > 0.05:
+                graph_dict[k].append(c)
+    
+    G = nx.Graph(graph_dict)
+    return G
+
 
 df = pd.read_csv("pricesvolumes.csv")
 #cols = [1,2,3,4,6,8,10,12,14,16,18,20,21,22,23,24,26,28,30,32,33,34,36,38,40,42]
@@ -111,7 +131,7 @@ for stock1,stock2 in itertools.permutations(allcols,2):
     numrecords = len(Ycurr)
     numtestrecords = int(math.ceil(0.3*numrecords))
     numtrainrecords = int(math.ceil(0.7*numrecords))
-    model_r = regression_model(p)
+    model_r = regression_model(p, Ypast.shape[1])
     np.random.seed(3)
     model_r.fit(Ypast[:numtrainrecords], Ycurr[:numtrainrecords], epochs=numepochs, batch_size=32, verbose=2, validation_split=0.1)
     Ycurrp = model_r.predict(Ypast[-numtestrecords:], batch_size=128)
@@ -135,7 +155,7 @@ for stock1,stock2 in itertools.permutations(allcols,2):
     numrecords = len(Ycurr)
     numtestrecords = int(math.ceil(0.3*numrecords))
     numtrainrecords = int(math.ceil(0.7*numrecords))
-    model_ur = regression_model(q)
+    model_ur = regression_model(q, Ypast.shape[1])
     np.random.seed(7)
     model_ur.fit(Ypast[:numtrainrecords], Ycurr[:numtrainrecords], epochs=numepochs, batch_size=32, verbose=2, validation_split=0.1)
     Ycurrp = model_ur.predict(Ypast[-numtestrecords:], batch_size=128)
@@ -169,3 +189,6 @@ with open(MsemodelurmsePath, 'wb') as handle:
     pickle.dump(model_ur_mse, handle, protocol=pickle.HIGHEST_PROTOCOL)
 with open(MsemodelurrmsePath, 'wb') as handle:
     pickle.dump(model_ur_rmse, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+G = construct_graph(model_ur_rmse, model_r_rmse)
+nx.draw(G)
