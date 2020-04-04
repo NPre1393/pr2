@@ -27,6 +27,7 @@ MsemodelurmsePath = "/models/msemodelurmse.pkl"
 MsemodelrrmsePath = "/models/msemodelrrmse.pkl"
 MsemodelurrmsePath = "/models/msemodelurrmse.pkl"
 
+# get lagged data
 def getstockdata(dfone, lag):
     Ypast = []
     Ycurr = []
@@ -40,6 +41,7 @@ def getstockdata(dfone, lag):
     Ycurr = Ycurr.reshape(Ycurr.shape[0], )
     return Ypast,Ycurr
 
+# deep learning model for autoregression
 def regression_model(lag, ypast_dim1):
     model = Sequential()
     model.add(Dense(units=2*lag, activation='relu', kernel_initializer='normal', bias_initializer='zeros', input_dim=ypast_dim1))
@@ -54,22 +56,28 @@ def regression_model(lag, ypast_dim1):
     # model.compile(loss='mse', optimizer='adam', metrics=['msd'])
     return model
 
+# fn to calculate f statistic
 def fstat(rmse_ur, rmse_r):
     return (rmse_r-rmse_ur)/rmse_ur
 
+# fn to construct granger features graph from bivariate regression
 def construct_graph(rmse_ur, rmse_r):
-    rmse_keys = rmse_ur.keys()
-    graph_dict = collections.defaultdict(dict)
+    rmse_keys = list(rmse_ur.keys())
+    #graph_dict = collections.defaultdict(dict)
+    graph_dict = {k:[] for k in rmse_ur}
+    print(graph_dict)
     for k in rmse_keys:
-        cand = rmse_keys[k]
-        graph_dict[k] = []
+        cand = rmse_ur[k]
+        #graph_dict[k] = []
         for c in cand:
             fs = fstat(rmse_ur[k][c], rmse_r[k][c])
             if fs > 0.05:
-                graph_dict[k].append(c)
-    
-    G = nx.Graph(graph_dict)
-    return G
+                graph_dict[c].append(k)
+        #if graph_dict[c] == []:
+        #    graph_dict.pop(k, None)
+    graph_dict = {k:v for (k,v) in graph_dict.items() if v != []}
+    G = nx.DiGraph(graph_dict, directed=True)
+    return G, graph_dict
 
 
 df = pd.read_csv("pricesvolumes.csv")
@@ -100,22 +108,6 @@ p = 200
 q = 200
 
 numepochs = 50
-#
-#msermses = {}
-#
-#for stock in allcols[1:]:
-#    Ypast, Ycurr = getstockdata(df[['Date', stock]],p)
-#    numrecords = len(Ycurr)
-#    numtestrecords = int(math.ceil(0.3 * numrecords))
-#    numtrainrecords = int(math.ceil(0.7 * numrecords))
-#    model_r = regression_model(p)
-#    np.random.seed(3)
-#    model_r.fit(Ypast[:numtrainrecords], Ycurr[:numtrainrecords], epochs=numepochs, batch_size=32, verbose=2,
-#               validation_split=0.1)
-#    Ycurrpmse = model_r.predict(Ypast[-numtestrecords:], batch_size=128)
-#    msermses[stock] = math.sqrt(mean_squared_error(Ycurrpmse, Ycurr[-numtestrecords:]))
-#    
-#print('mse modelr rmses', msermses)
 
 model_r_mae = collections.defaultdict(dict)
 model_r_mse = collections.defaultdict(dict)
@@ -190,5 +182,14 @@ with open(MsemodelurmsePath, 'wb') as handle:
 with open(MsemodelurrmsePath, 'wb') as handle:
     pickle.dump(model_ur_rmse, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-G = construct_graph(model_ur_rmse, model_r_rmse)
-nx.draw(G)
+G, g_dict = construct_graph(model_ur_rmse,model_r_rmse)
+
+options = {
+  'node_size': 1000,
+  'width': 1,
+  'arrowstyle': '-|>',
+  'arrowsize': 10,
+}
+
+pos = nx.shell_layout(G)
+nx.draw(G, pos, with_labels=True, **options)
