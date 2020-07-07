@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.sparse import random
 import random as rd
 import pandas as pd
-from matplotlib import pyplot
+import matplotlib.pyplot as plt
 
 class dataset():
 
@@ -38,6 +38,7 @@ class dataset():
         self.data = data
         self.coefficients1 = 0
         self.coefficients2 = 0
+        self.GC_output = 0
     
     def __repr__(self):
         repr = 'Dataset Information\n'\
@@ -139,8 +140,48 @@ class dataset():
                 
         self.data = pd.DataFrame(data=data.T,index=range(full_len),columns=range(self.features))
                 
-    def plot_data(self):
+    def plot_input(self):
+        fig, ax = plt.subplots(1,2,figsize=(16,5))
+        # plot all data
+        ax[0].plot(self.data)
+        # plot first 100 time steps
+        ax[1].plot(self.data[:100])
+        plt.show()
+
+    def plot_output_anom(self):
         pass
+
+    def plot_output_GC(self, GC_est):
+        print('True variable usage = %.2f%%' % (100 * np.mean(self.GC)))
+        print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
+        print('Accuracy = %.2f%%' % (100 * np.mean(self.GC == GC_est)))
+
+        # Make figures
+        fig, axarr = plt.subplots(1, 2, figsize=(16, 5))
+        axarr[0].imshow(self.GC, cmap='Blues')
+        axarr[0].set_title('GC actual')
+        axarr[0].set_ylabel('Affected series')
+        axarr[0].set_xlabel('Causal series')
+        axarr[0].set_xticks([])
+        axarr[0].set_yticks([])
+
+        axarr[1].imshow(GC_est, cmap='Blues', vmin=0, vmax=1, extent=(0, p, p, 0))
+        axarr[1].set_title('GC estimated')
+        axarr[1].set_ylabel('Affected series')
+        axarr[1].set_xlabel('Causal series')
+        axarr[1].set_xticks([])
+        axarr[1].set_yticks([])
+
+        # Mark disagreements
+        for i in range(self.features):
+            for j in range(self.features):
+                if self.GC[i, j] != GC_est[i, j]:
+                    rect = plt.Rectangle((j, i-0.05), 1, 1, facecolor='none', edgecolor='red', linewidth=1)
+                    axarr[1].add_patch(rect)
+
+        plt.show()
+
+
 
     def make_var_stationary(self, beta, radius=0.97):
         '''Rescale coefficients of VAR model to make stable.'''
@@ -187,12 +228,15 @@ class dataset():
         for t in range(lag, T + burn_in):
             X[:, t] = np.dot(beta, X[:, (t-lag):t].flatten(order='F'))
             X[:, t] += + errors[:, t-1]
-
-        return X.T[burn_in:], beta, GC
+        
+        self.data = X.T[burn_in:]
+        self.dependencies1 = GC
+        self.beta = beta
+        #return X.T[burn_in:], beta, GC
         
 
     def lorenz(self, x, t, F):
-    '''Partial derivatives for Lorenz-96 ODE.'''
+        '''Partial derivatives for Lorenz-96 ODE.'''
         p = len(x)
         dxdt = np.zeros(p)
         for i in range(p):
@@ -223,6 +267,6 @@ class dataset():
             GC[i, (i - 1) % p] = 1
             GC[i, (i - 2) % p] = 1
 
-        return X[burn_in:], GC
-
-
+        #return X[burn_in:], GC
+        self.data = X[burn_in:]
+        self.dependencies1 = GC
