@@ -12,5 +12,10 @@ print(data.loc[:,0:5])
 print(data.loc[:,[1,2,3]])
 print(data[2])
 
+#ds.plot_input()
+ds.GC = ds.dependencies1
+#ds.plot_output_GC(ds.dependencies2)
+ds.simulate_lorenz_96()
+print(ds.data)
+print(ds.dependencies1)
 ds.plot_input()
-
