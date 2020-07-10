@@ -194,7 +194,7 @@ class dataset():
         else:
             return beta
 
-    def simulate_var(self, p, T, lag, sparsity=0.3, beta_value=1.0, sd=0.1, seed=0):
+    def simulate_var(self, sparsity=0.3, beta_value=1.0, sd=0.1, seed=0):
         p = self.features
         lag = self.lag
         T = self.n1 + self.n2

@@ -280,7 +280,16 @@ class MainApplication(EvaluationApplication):
                 last_id = get_last_row_id()
                 predictions.append([last_id, np.squeeze(model.predict(x)[main_output_index])])
             row_ids = np.hstack(map(lambda x: x[0], predictions))
-            outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
+            ps = [p for (_,p) in predictions]
+            #for i in map(lambda x: x[1], predictions):
+            #    print(type(i))
+            #print(ps)
+            #print(predictions)
+            #outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
+            outputs = np.concatenate(ps, axis=0)
+
+            #outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
+            
             file_path = self.get_prediction_path(generator_name)
 
             num_predictions = 1 if len(outputs.shape) == 1 else outputs.shape[-1]
@@ -341,7 +350,8 @@ class MainApplication(EvaluationApplication):
                             plot_image(explanation, generator_name + str(idx) + "_attention.png", output_directory)
 
             row_ids = np.hstack(map(lambda x: x[0], predictions))
-            outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
+            outputs = np.concatenate([p for (_,p) in predictions],axis=0)
+            #outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
             file_path = self.get_attribution_path(generator_name)
             df = pd.DataFrame(outputs, index=row_ids, columns=["a_" + str(i) for i in range(outputs.shape[-1])])
             df.to_csv(file_path)
