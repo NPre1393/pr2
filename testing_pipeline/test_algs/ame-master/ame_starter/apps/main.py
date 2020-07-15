@@ -29,7 +29,7 @@ from ame_starter.models.model_builder import ModelBuilder
 from ame_starter.apps.evaluate import EvaluationApplication
 from ame_starter.apps.parameters import clip_percentage, parse_parameters
 from ame_starter.data_access.generator import make_generator, get_last_row_id
-
+from IPython.core.debugger import set_trace
 
 class MainApplication(EvaluationApplication):
     def __init__(self, args):
@@ -280,13 +280,12 @@ class MainApplication(EvaluationApplication):
                 last_id = get_last_row_id()
                 predictions.append([last_id, np.squeeze(model.predict(x)[main_output_index])])
             row_ids = np.hstack(map(lambda x: x[0], predictions))
-            ps = [p for (_,p) in predictions]
             #for i in map(lambda x: x[1], predictions):
             #    print(type(i))
             #print(ps)
             #print(predictions)
             #outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
-            outputs = np.concatenate(ps, axis=0)
+            outputs = np.concatenate([p for (_,p) in predictions], axis=0)
 
             #outputs = np.concatenate(map(lambda x: x[1], predictions), axis=0)
             

@@ -27,6 +27,7 @@ from os.path import join
 import keras.backend as K
 from datetime import datetime
 from ame_starter.apps.parameters import parse_parameters
+#from IPython.core.debugger import set_trace
 
 if sys.version_info < (3, 0, 0):
     import cPickle as pickle
@@ -110,7 +111,7 @@ class EvaluationApplication(object):
 
     def run_single(self, evaluate_against="test"):
         print("INFO: Run with args:", self.args, file=sys.stderr)
-
+        #set_trace()
         save_predictions = self.args["save_predictions"]
         save_attributions = self.args["save_attributions"]
 
