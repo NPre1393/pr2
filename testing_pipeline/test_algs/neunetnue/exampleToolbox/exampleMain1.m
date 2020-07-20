@@ -41,7 +41,7 @@
 
     %% Set MuTE folder path including also all the subfolders, for instance
     clear all;
-    mutePath = ('C:\\Users\\mpres\\Documents\\MATLAB\\neunetnue\\'); % Adjust according to your path -> just an example: mutePath = '/home/alessandro/Scrivania/MuTE/';
+    %mutePath = ('C:\\Users\\mpres\\Documents\\MATLAB\\neunetnue\\'); % Adjust according to your path -> just an example: mutePath = '/home/alessandro/Scrivania/MuTE/';
 %     cd(mutePath);
 %     addpath(genpath(pwd));
     
@@ -103,6 +103,7 @@
     
 %  
        %% STATISTICAL METHODS
+    dataLoaded = load([dataDir listRealization(1,1).name]);
 
     fprintf('\n******************************\n\n');
     disp('Computing statistical methods...');
@@ -124,22 +125,41 @@
 %                                       'nnnue',[],[],[],5,'multiv',[1 1],100,'maximum',10,@nearNeiConditionalMutualInformation,...
 %                                       @evalNearNeiTestSurrogates2rand,nnMexa64Path,mutePath,0.05,@generateConditionalTerm,0);
 
-    [output1,params1] = parametersAndMethods(listRealization,samplingRate,pointsToDiscard,channels,autoPairwiseTarDriv,...
+    [output,params] = parametersAndMethods_new(dataLoaded.data,samplingRate,pointsToDiscard,channels,autoPairwiseTarDriv,...
                                         handPairwiseTarDriv,resultDir,dataDir,copyDir,numProcessors,...
                                         'neunetnue',[],[],[],[],5,[1 0],[1 1],'biv',[],[],{@sigmoid @identity},30,0,4000,threshold,2/3,15,...
                                         valThreshold,@resilientBackPropagation,1.1,0.9,1,numHiddenNodes,@generateConditionalTerm,1);
 
     %close all
     toc
-    out_mat = outputToStore.reshapedMtx;
-    out_mat(find(out_mat~=0))=1
+%     out_mat = outputToStore.reshapedMtx;
+%     out_mat(find(out_mat~=0))=1
 
     fprintf('\n\n');
     disp('...computation done!');
     fprintf('\n\n');
     
+    numTargets = size(dataLoaded.data,1);
+    A = reshape(output.transferEntropy,numTargets-1,numTargets);
+    if find(isnan(A));
+        [idRow,idCol] = find(isnan(A));
+        for idR = idRow
+            for idC = idCol
+                A(idR,idC) = 0;
+            end
+        end
+    end
+    reshapedMtx = zeros(numTargets);
+    reshapedMtx(:,1) = [0;A(:,1)];
+    for j = 2:numTargets-1
+        reshapedMtx(:,j) = [A(1:j-1,j);0;A(j:end,j)];
+    end
+    reshapedMtx(:,numTargets) = [A(:,numTargets);0];
+    
+    out_mat = reshapedMtx;
+    out_mat((out_mat~=0))=1
     %close all
-    cd(mutePath);
+%    cd(mutePath);
     %exit;
 
 
