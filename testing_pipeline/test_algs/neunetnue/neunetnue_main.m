@@ -1,3 +1,5 @@
+% script to test method wrapper
+
 % nameDataDir  = 'exampleToolbox\\';
 % dataDir = ['C:\\Users\\mpres\\Documents\\MATLAB\\neunetnue\\' nameDataDir];
 % dataFileName = 'realization_5000p_1';
