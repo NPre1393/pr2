@@ -8,7 +8,26 @@ import matplotlib.pyplot as plt
 
 class dataset():
 
-    def __init__(self, features=10, lag=2, dep_dens=0.3, dependencies=dict(), n1=200, n2=100, dists=0, coeff_min=0.6, coeff_max=0.9, data=0, caused_ts=0):
+    def __init__(self, features=10, lag=2, dep_dens=0.3, dependencies=dict(), n=300, dists=0, coeff_min=0.6, coeff_max=0.9, data=0, caused_ts=0):
+
+        """
+        Constructor for dataset object
+
+        Args (optional):
+            :param features (int):          number of time series/variables in dataset
+            :param lag (int):               past time lag needed for generation of values  
+            :param dep_dens (float):        range [0:1], % of ts causing other ts
+            :param dependencies (dict):     dependency structure should be dependencies['dependencies1']
+                                            if dependency anomaly data will be generated also add dependencies['dependencies2']
+            :param n (int):                 nr of time steps to generate
+            :param dists (list):            type of distribution (0:gaussian, 1:bernoulli, 2:gamma, 3:poisson) from which to sample 
+                                            data values
+            :param coeff_min (float):       range [0:1], VAR beta coefficient min  
+            :param coeff_max (float):       range [0:1], VAR beta coefficient max
+            :param data (np.array):         can load data or generate it later
+            :param caused_ts (int):         nr of variables caused by other variables
+        """
+
         self.features = features
         self.lag = lag
         self.dep_dens = dep_dens
@@ -24,8 +43,7 @@ class dataset():
             self.dependencies['dep1'] = self.gen_anom_deps(features, dep_dens, self.caused_ts)
             self.dependencies['dep2']= self.gen_anom_deps(features, dep_dens, self.caused_ts)
         
-        self.n1 = n1
-        self.n2 = n2
+        self.n = n
 
         if not dists:
             self.dists = np.zeros(self.features)
@@ -34,8 +52,7 @@ class dataset():
         self.coeff_min = coeff_min
         self.coeff_max = coeff_max
         self.data = data
-        self.coefficients1 = 0
-        self.coefficients2 = 0
+        # GC is the [features x features] matrix resulting from the algorithms 
         self.GC = 0
     
     def __repr__(self):
@@ -79,13 +96,15 @@ class dataset():
     # dependencies1 determine 0:n1 values
     # dependencies2 determine n1:n1+n2 values
     ###
-    def gen_dep_anom_data(self):
-        full_len = self.n1+self.n2
-        data = np.zeros([self.features, full_len])
+    def gen_dep_anom_data(self, n1, n2):
+        if n1+n2 != self.n:
+            raise ValueError("n1+n2 need to be equal to n: {}+{}={}".format(n1,n2,self.n)) 
+
+        data = np.zeros([self.features, self.n])
         # row indcies of caused ts from dependency structure 1 and 2
-        rowIdx1, colIdx1 = np.where(self.dependencies['dep1'] == 1)
+        rowIdx1, _ = np.where(self.dependencies['dep1'] == 1)
         deps1 = np.unique(rowIdx1)
-        rowIdx2, colIdx2 = np.where(self.dependencies['dep2'] == 1)
+        rowIdx2, _ = np.where(self.dependencies['dep2'] == 1)
         deps2 = np.unique(rowIdx2)
         deps1_len = len(deps1)
         deps2_len = len(deps2)
@@ -100,13 +119,13 @@ class dataset():
                 if self.dists[i] == 0:
                     mu = np.random.random_sample()
                     sigma = np.random.random_sample()
-                    data[i] = np.random.normal(mu, sigma, full_len)
+                    data[i] = np.random.normal(mu, sigma, self.n)
                 elif self.dists[i] == 1:
-                    data[i] = np.random.poisson(1,full_len)
+                    data[i] = np.random.poisson(1,self.n)
                 elif self.dists[i] == 2:
-                    data[i] = np.random.binomial(1,0.5,full_len)
+                    data[i] = np.random.binomial(1,0.5,self.n)
                 elif self.dists[i] == 3:
-                    data[i] = np.random.gamma(1,1,full_len)
+                    data[i] = np.random.gamma(1,1,self.n)
                 else:
                     return "dataset dists vector contains wrong values, only 0-3 allowed" 
 
@@ -116,7 +135,7 @@ class dataset():
             sigma = np.random.random_sample()            
             #coeffs = np.array([round(rd.uniform(self.coeff_min, self.coeff_max),1) for _ in range(deps1_per[i]*self.lag)])
             coeffs = np.array([round(x,1) for x in np.random.uniform(self.coeff_min, self.coeff_max, deps1_per[i]*self.lag)])
-            for j in range(self.lag,self.n1):
+            for j in range(self.lag,n1):
                 #if j < self.lag+1:
                 #    data[i,j] = np.random.normal(mu,sigma)
                 #if j > self.lag+1:
@@ -125,61 +144,20 @@ class dataset():
                     lagged_vals[:len(res[np.nonzero(res)])] = res[np.nonzero(res)]
                     data[i,j] = sum(coeffs*lagged_vals)
             # linear function to impute 0:lag values
-            A = np.vstack([[x for x in range(self.n1-self.lag)], np.ones(self.n1-self.lag)]).T
-            k, d = np.linalg.lstsq(A, data[i,self.lag:self.n1], rcond=None)[0]
+            A = np.vstack([[x for x in range(n1-self.lag)], np.ones(n1-self.lag)]).T
+            k, d = np.linalg.lstsq(A, data[i,self.lag:n1], rcond=None)[0]
             data[i,:self.lag] = [k*x+d for x in range(self.lag)]
 
         for i in range(deps2_len):
             coeffs = np.array([round(x,1) for x in np.random.uniform(self.coeff_min, self.coeff_max, deps2_per[i]*self.lag)])            
-            for j in range(self.n1,full_len):
+            for j in range(n1,self.n):
                 res = (data[:,j-self.lag:j-1]).T*self.dependencies['dep2'][deps2[i]]
                 lagged_vals = np.zeros(coeffs.shape)
                 lagged_vals[:len(res[np.nonzero(res)])] = res[np.nonzero(res)]
                 data[i,j] = sum(coeffs*lagged_vals)
                 
-        self.data = pd.DataFrame(data=data.T,index=range(full_len),columns=range(self.features))
+        self.data = pd.DataFrame(data=data.T,index=range(self.n),columns=range(self.features))
                 
-    def plot_input(self):
-        fig, ax = plt.subplots(1,2,figsize=(16,5))
-        # plot all data
-        ax[0].plot(self.data)
-        # plot first 100 time steps
-        ax[1].plot(self.data[:100])
-        plt.show()
-
-    def plot_output_anom(self):
-        pass
-
-    def plot_output_GC(self, GC_est):
-        print('True variable usage = %.2f%%' % (100 * np.mean(self.GC)))
-        print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
-        print('Accuracy = %.2f%%' % (100 * np.mean(self.GC == GC_est)))
-
-        # Make figures
-        fig, axarr = plt.subplots(1, 2, figsize=(16, 5))
-        axarr[0].imshow(self.GC, cmap='Blues')
-        axarr[0].set_title('GC actual')
-        axarr[0].set_ylabel('Affected series')
-        axarr[0].set_xlabel('Causal series')
-        axarr[0].set_xticks([])
-        axarr[0].set_yticks([])
-
-        axarr[1].imshow(GC_est, cmap='Blues', vmin=0, vmax=1, extent=(0, self.features, self.features, 0))
-        axarr[1].set_title('GC estimated')
-        axarr[1].set_ylabel('Affected series')
-        axarr[1].set_xlabel('Causal series')
-        axarr[1].set_xticks([])
-        axarr[1].set_yticks([])
-
-        # Mark disagreements
-        for i in range(self.features):
-            for j in range(self.features):
-                if self.GC[i, j] != GC_est[i, j]:
-                    rect = plt.Rectangle((j, i-0.05), 1, 1, facecolor='none', edgecolor='red', linewidth=1)
-                    axarr[1].add_patch(rect)
-
-        plt.show()
-
     def make_var_stationary(self, beta, radius=0.97):
         '''Rescale coefficients of VAR model to make stable.'''
         p = beta.shape[0]
@@ -194,10 +172,10 @@ class dataset():
         else:
             return beta
 
-    def simulate_var(self, sparsity=0.3, beta_value=1.0, sd=0.1, seed=0):
+    def gen_var_data(self, sparsity=0.3, beta_value=1.0, sd=0.1, seed=0):
         p = self.features
         lag = self.lag
-        T = self.n1 + self.n2
+        T = self.n
         sparsity = self.dep_dens
 
         if seed is not None:
@@ -241,14 +219,13 @@ class dataset():
 
         return dxdt
 
-
-    def simulate_lorenz_96(self, p=10, T=300, F=10.0, delta_t=0.1, sd=0.1, burn_in=1000,
+    def gen_lorenz96_data(self, p=10, T=300, F=10.0, delta_t=0.1, sd=0.1, burn_in=1000,
                         seed=0):
         if seed is not None:
             np.random.seed(seed)
 
         p = self.features
-        T = self.n1 + self.n2
+        T = self.n
 
         # Use scipy to solve ODE.
         x0 = np.random.normal(scale=0.01, size=p)
@@ -267,3 +244,48 @@ class dataset():
         #return X[burn_in:], GC
         self.data = X[burn_in:]
         self.dependencies['dep1'] = GC
+
+    def plot_input(self):
+        fig, ax = plt.subplots(1,2,figsize=(16,5))
+        # plot all data
+        ax[0].plot(self.data)
+        ax[0].set_xlabel('t')
+        ax[0].set_title('Full dataset')
+        # plot first 100 time steps
+        ax[1].plot(self.data[:100])
+        ax[1].set_xlabel('t')
+        ax[1].set_title('First 100 timesteps')
+        plt.show()
+
+    def plot_output_anom(self):
+        pass
+
+    def plot_output_GC(self, GC_est):
+        print('True variable usage = %.2f%%' % (100 * np.mean(self.GC)))
+        print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
+        print('Accuracy = %.2f%%' % (100 * np.mean(self.GC == GC_est)))
+
+        # Make figures
+        fig, axarr = plt.subplots(1, 2, figsize=(16, 5))
+        axarr[0].imshow(self.GC, cmap='Blues')
+        axarr[0].set_title('GC actual')
+        axarr[0].set_ylabel('Affected series')
+        axarr[0].set_xlabel('Causal series')
+        axarr[0].set_xticks([])
+        axarr[0].set_yticks([])
+
+        axarr[1].imshow(GC_est, cmap='Blues', vmin=0, vmax=1, extent=(0, self.features, self.features, 0))
+        axarr[1].set_title('GC estimated')
+        axarr[1].set_ylabel('Affected series')
+        axarr[1].set_xlabel('Causal series')
+        axarr[1].set_xticks([])
+        axarr[1].set_yticks([])
+
+        # Mark disagreements
+        for i in range(self.features):
+            for j in range(self.features):
+                if self.GC[i, j] != GC_est[i, j]:
+                    rect = plt.Rectangle((j, i-0.05), 1, 1, facecolor='none', edgecolor='red', linewidth=1)
+                    axarr[1].add_patch(rect)
+
+        plt.show()
