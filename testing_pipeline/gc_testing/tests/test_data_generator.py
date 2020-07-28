@@ -1,4 +1,10 @@
-import data_generator as dg
+import sys, os
+# adds the parent directory path + apps folder appended to system path
+#sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'apps'))
+# adds the parent directory (gc_testing) to system path, all imports are relative to this dir 
+sys.path.append(os.path.dirname(sys.path[0]))
+
+import apps.data_generator as dg
 import pandas as pd
 import matplotlib.pyplot as plt
 

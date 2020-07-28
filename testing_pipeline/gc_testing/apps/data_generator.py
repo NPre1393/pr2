@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 class dataset():
 
-    def __init__(self, features=10, lag=2, dep_dens=0.3, dependencies=dict(), n=300, dists=0, coeff_min=0.6, coeff_max=0.9, data=0, caused_ts=0):
+    def __init__(self, features=10, lag=2, dep_dens=0.3, dependencies=dict(), n=300, dists=0, coeff_min=0.6, coeff_max=0.9, data=0, caused_ts=0, seed=123):
 
         """
         Constructor for dataset object
@@ -54,6 +54,8 @@ class dataset():
         self.data = data
         # GC is the [features x features] matrix resulting from the algorithms 
         self.GC = 0
+        self.seed = seed
+        np.random.seed(seed)
     
     def __repr__(self):
         deps = '\n'.join('{}:\n{}'.format(k, self.dependencies[k]) for k in self.dependencies.keys())
