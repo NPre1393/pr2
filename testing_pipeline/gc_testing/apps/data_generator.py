@@ -209,7 +209,7 @@ class dataset():
             X[:, t] = np.dot(beta, X[:, (t-lag):t].flatten(order='F'))
             X[:, t] += + errors[:, t-1]
         
-        self.data = X.T[burn_in:]
+        self.data = pd.DataFrame(data=X.T[burn_in:],index=range(self.n),columns=range(self.features))
         self.dependencies['dep1'] = GC
         self.beta = beta
         #return X.T[burn_in:], beta, GC

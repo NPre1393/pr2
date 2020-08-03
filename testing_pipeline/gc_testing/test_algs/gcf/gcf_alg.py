@@ -12,17 +12,14 @@ class GCF(Algorithm):
 
     def __init__(self, args):
         super(GCF, self).__init__(args)
-        self.lag = self.args["lag"]
         self.p = self.args["p"]
         self.q = self.args["q"]
 
     def __repr__(self):
         repr_s = super(GCF, self).__repr__()
-        repr = '\nGranger Loss Weight = {}\n'\
-            'L2 weight = {}\n'\
-            'NN nr of HUs = {}\n'\
-            'NN nr of layers = {}'\
-            .format(self.lag, self.p, self.q)
+        repr = '\np = {}\n'\
+            'q = {}'\
+            .format(self.p, self.q)
         return repr_s+repr
 
     def run(self):

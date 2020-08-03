@@ -19,3 +19,17 @@ def construct_graph_gcf(rmse_ur, rmse_r):
     graph_dict = {k:v for (k,v) in graph_dict.items() if v != []}
     G = nx.DiGraph(graph_dict, directed=True)
     return G, graph_dict
+
+"""
+G, g_dict = construct_graph(model_ur_rmse,model_r_rmse)
+
+    options = {
+    'node_size': 1000,
+    'width': 1,
+    'arrowstyle': '-|>',
+    'arrowsize': 10,
+    }
+
+    pos = nx.shell_layout(G)
+    nx.draw(G, pos, with_labels=True, **options)
+"""
