@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import sys
 import pandas as pd
+import numpy as np
 from os.path import join
 from keras.callbacks import *
 from keras.utils import to_categorical
@@ -50,7 +51,8 @@ class MainApplication(EvaluationApplication):
     def load_image_data(self, img_channels, img_rows, img_cols, num_classes, dataset):
         (x_train, y_train), (x_test, y_test) = dataset.load_data()
 
-        if K.image_dim_ordering() == "th":
+        #if K.image_dim_ordering() == "th":
+        if K.common.image_dim_ordering() == "th":
             input_shape = (img_channels, img_rows, img_cols)
         else:  # K.image_dim_ordering() == "tf":
             input_shape = (img_rows, img_cols, img_channels)
@@ -385,7 +387,9 @@ class MainApplication(EvaluationApplication):
         tb.validation_data += [np.ones(x[0].shape[0])] * num_targets + [0.0]
         return tb
 
-
 if __name__ == '__main__':
+    run_main()
+
+def run_main():
     app = MainApplication(parse_parameters())
     app.run()

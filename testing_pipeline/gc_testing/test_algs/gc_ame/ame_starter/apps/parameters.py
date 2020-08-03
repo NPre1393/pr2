@@ -34,7 +34,7 @@ class ReadableDir(Action):
 
 def parse_parameters():
     parser = ArgumentParser(description='AME starter project.')
-    parser.add_argument("--dataset", default="mnist",
+    parser.add_argument("--dataset", default="boston_housing",
                         help="The data set to be loaded (mnist, boston_housing).")
     parser.add_argument("--seed", type=int, default=909,
                         help="Seed for the random number generator.")

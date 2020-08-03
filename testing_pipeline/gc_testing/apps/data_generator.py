@@ -31,18 +31,8 @@ class dataset():
         self.features = features
         self.lag = lag
         self.dep_dens = dep_dens
-        if not caused_ts:
-            self.caused_ts = np.random.randint(self.features/2)+1
-        else:
-            self.caused_t = caused_ts
-
-        if dependencies:
-            self.dependencies = dependencies
-        else:
-            self.dependencies = dict()
-            self.dependencies['dep1'] = self.gen_anom_deps(features, dep_dens, self.caused_ts)
-            self.dependencies['dep2']= self.gen_anom_deps(features, dep_dens, self.caused_ts)
-        
+        self.caused_ts = caused_ts
+        self.dependencies = dependencies
         self.n = n
 
         if not dists:
@@ -66,6 +56,10 @@ class dataset():
             .format(self.features, self.lag, self.dists, deps)
 
         return repr
+
+    def load_dataset(self, path):
+        data = pd.read_csv(path)
+        self.data = data
 
     ###
     # Function to generate dependency structure of time series
@@ -98,10 +92,19 @@ class dataset():
     # dependencies1 determine 0:n1 values
     # dependencies2 determine n1:n1+n2 values
     ###
-    def gen_dep_anom_data(self, n1, n2):
+    def gen_dep_anom_data(self, n1, n2, caused_ts=0):
         if n1+n2 != self.n:
             raise ValueError("n1+n2 need to be equal to n: {}+{}={}".format(n1,n2,self.n)) 
 
+        if not caused_ts:
+            self.caused_ts = np.random.randint(self.features/2)+1
+        else:
+            self.caused_t = caused_ts
+
+        if not self.dependencies:
+            self.dependencies['dep1'] = self.gen_anom_deps(self.features, self.dep_dens, self.caused_ts)
+            self.dependencies['dep2']= self.gen_anom_deps(self.features, self.dep_dens, self.caused_ts)
+        
         data = np.zeros([self.features, self.n])
         # row indcies of caused ts from dependency structure 1 and 2
         rowIdx1, _ = np.where(self.dependencies['dep1'] == 1)

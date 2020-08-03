@@ -20,20 +20,8 @@ import collections
 import pickle
 from sklearn.metrics import mean_squared_error
 
-MsemodelrmaePath = "/models/msemodelrmae.pkl"
-MsemodelrmsePath = "/models/msemodelrmse.pkl"
-MsemodelurmaePath = "/models/msemodelurmae.pkl"
-MsemodelurmsePath = "/models/msemodelurmse.pkl"
-MsemodelrrmsePath = "/models/msemodelrrmse.pkl"
-MsemodelurrmsePath = "/models/msemodelurrmse.pkl"
-inputbatchsize = 5000
-# lag variables for r/ur models
-p = 200
-q = 200
-numepochs = 50
-
 # get lagged data
-def getstockdata(dfone, lag):
+def getstockdata(dfone, lag, inputbatchsize):
     Ypast = []
     Ycurr = []
     for i in range(-inputbatchsize, 0):
@@ -51,9 +39,9 @@ def regression_model(lag, ypast_dim1):
     model = Sequential()
     model.add(Dense(units=2*lag, activation='relu', kernel_initializer='normal', bias_initializer='zeros', input_dim=ypast_dim1))
     model.add(Dropout(0.5))
-    model.add(Dense(int(lag/2), activation='linear', kernel_initializer='normal', bias_initializer='zeros'))
+    model.add(Dense(lag/2, activation='linear', kernel_initializer='normal', bias_initializer='zeros'))
     model.add(Dropout(0.2))
-    model.add(Dense(int(lag/2), activation='relu', kernel_initializer='normal', bias_initializer='zeros'))
+    model.add(Dense(lag/2, activation='relu', kernel_initializer='normal', bias_initializer='zeros'))
     model.add(Dropout(0.5))
     model.add(Dense(units=1, kernel_initializer='normal', bias_initializer='zeros'))
 
@@ -84,14 +72,14 @@ def construct_graph(rmse_ur, rmse_r):
     G = nx.DiGraph(graph_dict, directed=True)
     return G, graph_dict
 
-def run_main():
-    df = pd.read_csv("pricesvolumes.csv")
-    cols = [1,2,3,4,6,8,10,12,14,16,18,20,21,22,23,24,26,28,30,32,33,34,36,38,40,42]
-    #cols = [1,2,3,4]
+def run_main(args):
+    # df = pd.read_csv("pricesvolumes.csv")
+    # #cols = [1,2,3,4,6,8,10,12,14,16,18,20,21,22,23,24,26,28,30,32,33,34,36,38,40,42]
+    # cols = [1,2,3,4]
 
-    df.drop(df.columns[cols],axis=1,inplace=True)
-    df.fillna(0, inplace=True)
-
+    # df.drop(df.columns[cols],axis=1,inplace=True)
+    # df.fillna(0, inplace=True)
+    df = args['data']
     print(len(df.columns)) # 17
 
     print((df.columns)) # Index([u'Date', u'^DJI_prices', u'^GSPC_prices', u'^IXIC_prices', u'AAPL_prices', u'ABT_prices', u'AEM_prices', u'AFG_prices', u'APA_prices', u'B_prices', u'CAT_prices', u'FRD_prices', u'GIGA_prices', u'LAKE_prices', u'MCD_prices', u'MSFT_prices', u'ORCL_prices', u'SUN_prices', u'T_prices', u'UTX_prices', u'WWD_prices'], dtype='object')
@@ -106,7 +94,7 @@ def run_main():
     allcols.remove("B_prices")
     allcols.remove("LAKE_prices")
     allcols.remove("SUN_prices")
-    print(df)
+
     inputbatchsize = 5000
     # lag variables for r/ur models
     p = 200
@@ -123,7 +111,7 @@ def run_main():
 
     for stock1,stock2 in itertools.permutations(allcols,2):
         print('stock1,stock2',stock1,stock2)
-        Ypast, Ycurr = getstockdata(df[['Date', stock1]],p)
+        Ypast, Ycurr = getstockdata(df[['Date', stock1]],p,inputbatchsize)
         # Ypast,Ycurr = getstockdata(df[['Date','MSFT_prices']])
         numrecords = len(Ycurr)
         numtestrecords = int(math.ceil(0.3*numrecords))
@@ -143,8 +131,8 @@ def run_main():
         model_r_mae[stock1][stock2] = mse_mae_value_r
         model_r_mse[stock1][stock2] = mse_mse_value_r
 
-        Ypast1, Ycurr1 = getstockdata(df[['Date', stock1]],p)
-        Ypast2, Ycurr2 = getstockdata(df[['Date', stock2]],q)
+        Ypast1, Ycurr1 = getstockdata(df[['Date', stock1]],p,inputbatchsize)
+        Ypast2, Ycurr2 = getstockdata(df[['Date', stock2]],q,inputbatchsize)
         Ycurr2 = Ycurr1
         Ypast = np.concatenate((Ypast1, Ypast2))
         Ycurr = np.concatenate((Ycurr1, Ycurr2))
@@ -174,18 +162,18 @@ def run_main():
     print('msemodelurmse', model_ur_mse)
     print('msemodelurrmse', model_ur_rmse)
 
-    with open(MsemodelrmaePath, 'wb') as handle:
-        pickle.dump(model_r_mae, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(MsemodelrmsePath, 'wb') as handle:
-        pickle.dump(model_r_mse, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(MsemodelrrmsePath, 'wb') as handle:
-        pickle.dump(model_r_rmse, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(MsemodelurmaePath, 'wb') as handle:
-        pickle.dump(model_ur_mae, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(MsemodelurmsePath, 'wb') as handle:
-        pickle.dump(model_ur_mse, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(MsemodelurrmsePath, 'wb') as handle:
-        pickle.dump(model_ur_rmse, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(MsemodelrmaePath, 'wb') as handle:
+    #     pickle.dump(model_r_mae, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(MsemodelrmsePath, 'wb') as handle:
+    #     pickle.dump(model_r_mse, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(MsemodelrrmsePath, 'wb') as handle:
+    #     pickle.dump(model_r_rmse, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(MsemodelurmaePath, 'wb') as handle:
+    #     pickle.dump(model_ur_mae, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(MsemodelurmsePath, 'wb') as handle:
+    #     pickle.dump(model_ur_mse, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open(MsemodelurrmsePath, 'wb') as handle:
+    #     pickle.dump(model_ur_rmse, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     G, g_dict = construct_graph(model_ur_rmse,model_r_rmse)
 
@@ -200,4 +188,4 @@ def run_main():
     nx.draw(G, pos, with_labels=True, **options)
 
 if __name__ == '__main__':
-    run_main()
+    run_main(args)

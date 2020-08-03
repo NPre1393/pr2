@@ -17,7 +17,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import print_function
 
-
+import pdb
 import numpy as np
 from functools import partial
 from keras.models import Model
@@ -190,9 +190,10 @@ class ModelBuilder(object):
         def loop_fun(x):
             i = tf.constant(0)
 
-            c = lambda i, ths, o: tf.less(i, num_experts)
+            c = lambda i, ths, o: tf.math.less(i, num_experts)
 
             def loop_body(i, topmost_hidden_states, outputs):
+                pdb.set_trace()
                 if has_prebuilt_hidden_states:
                     topmost_hidden_state = topmost_hidden_states[i]
                 else:
@@ -201,8 +202,10 @@ class ModelBuilder(object):
                 auxiliary_output = output_tf_activation(tf.matmul(topmost_hidden_state, w2[i]) + b2[i])
                 outputs = outputs.write(i, auxiliary_output)
                 return i + 1, topmost_hidden_states, outputs
-
+            pdb.set_trace()
             _, hidden_states, aux_outputs = tf.while_loop(c, loop_body, [i, topmost_hidden_states, outputs])
+            #_, hidden_states, aux_outputs = tf.nest.map_structure(tf.stop_gradient, tf.while_loop(c, loop_body, [i, topmost_hidden_states, outputs]))
+            #_,hidden_states, aux_outputs = tf.compat.v1.while_loop(c, loop_body, [i, topmost_hidden_states, outputs])
             return [hidden_states.stack() if not has_prebuilt_hidden_states else topmost_hidden_states,
                     aux_outputs.stack()]
 

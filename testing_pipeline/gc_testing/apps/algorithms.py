@@ -14,6 +14,8 @@ class Algorithm:
 
         return repr
 
-
     def run(self):
+        return None
+
+    def parse_params(self, args):
         return None

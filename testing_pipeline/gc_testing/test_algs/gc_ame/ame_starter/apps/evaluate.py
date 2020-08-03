@@ -58,12 +58,14 @@ class EvaluationApplication(object):
 
         import tensorflow as tf
         np.random.seed(seed)
-        tf.set_random_seed(seed)
-
+        #tf.set_random_seed(seed)
+        tf.random.set_seed(seed)
         # Configure tensorflow not to use the entirety of GPU memory at start.
-        config = tf.ConfigProto()
+        #config = tf.ConfigProto()
+        config = tf.compat.v1.ConfigProto()
         config.gpu_options.allow_growth = True
-        session = tf.Session(config=config)
+        #session = tf.Session(config=config)
+        session = tf.compat.v1.Session(config=config)
 
     def store_cache(self):
         print("INFO: Nothing to store.", file=sys.stderr)
