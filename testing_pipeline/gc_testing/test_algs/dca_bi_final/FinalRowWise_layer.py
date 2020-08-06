@@ -12,10 +12,10 @@ class FR_Model(nn.Module):
     def __init__(self, args, p_len):
         super(FR_Model, self).__init__()
         
-        self.cuda = args.cuda
+        self.cuda = args['cuda']
 
-        self.pre_win = args.pre_win
-        self.y_dim = args.y_dim
+        self.pre_win = args['pre_win']
+        self.y_dim = args['y_dim']
 
         self.weight = nn.Parameter(torch.ones([self.y_dim, p_len, self.pre_win]))
         nn.init.kaiming_uniform_(self.weight, mode='fan_in', nonlinearity='relu')

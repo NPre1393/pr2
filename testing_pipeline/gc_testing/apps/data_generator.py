@@ -5,6 +5,7 @@ from scipy.integrate import odeint
 import random as rd
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn import metrics
 
 class dataset():
 
@@ -43,7 +44,7 @@ class dataset():
         self.coeff_max = coeff_max
         self.data = data
         # GC is the [features x features] matrix resulting from the algorithms 
-        self.GC = 0
+        self.GC = {}
         self.seed = seed
         np.random.seed(seed)
     
@@ -84,6 +85,7 @@ class dataset():
             if not np.nonzero(dep_structure[i])[0].size:
         """
         #print(dep_structure)
+        dep_structure = pd.DataFrame(data=dep_structure,index=range(self.features),columns=range(self.features))
         return dep_structure
 
     ###
@@ -210,7 +212,7 @@ class dataset():
             X[:, t] += + errors[:, t-1]
         
         self.data = pd.DataFrame(data=X.T[burn_in:],index=range(self.n),columns=range(self.features))
-        self.dependencies['dep1'] = GC
+        self.dependencies['dep1'] = pd.DataFrame(data=GC,index=range(self.features),columns=range(self.features))
         self.beta = beta
         #return X.T[burn_in:], beta, GC
         
@@ -247,8 +249,8 @@ class dataset():
             GC[i, (i - 2) % p] = 1
 
         #return X[burn_in:], GC
-        self.data = X[burn_in:]
-        self.dependencies['dep1'] = GC
+        self.data = pd.DataFrame(data=X[burn_in:],index=range(self.n),columns=range(self.features))
+        self.dependencies['dep1'] = pd.DataFrame(data=GC,index=range(self.features),columns=range(self.features))
 
     def plot_input(self):
         fig, ax = plt.subplots(1,2,figsize=(16,5))
@@ -265,14 +267,14 @@ class dataset():
     def plot_output_anom(self):
         pass
 
-    def plot_output_GC(self, GC_est):
-        print('True variable usage = %.2f%%' % (100 * np.mean(self.GC)))
+    def plot_output_GC(self, GC_est, GC):
+        print('True variable usage = %.2f%%' % (100 * np.mean(GC)))
         print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
-        print('Accuracy = %.2f%%' % (100 * np.mean(self.GC == GC_est)))
+        print('Accuracy = %.2f%%' % (100 * np.mean(GC == GC_est)))
 
         # Make figures
         fig, axarr = plt.subplots(1, 2, figsize=(16, 5))
-        axarr[0].imshow(self.GC, cmap='Blues')
+        axarr[0].imshow(GC, cmap='Blues')
         axarr[0].set_title('GC actual')
         axarr[0].set_ylabel('Affected series')
         axarr[0].set_xlabel('Causal series')
@@ -289,8 +291,13 @@ class dataset():
         # Mark disagreements
         for i in range(self.features):
             for j in range(self.features):
-                if self.GC[i, j] != GC_est[i, j]:
+                if GC[i, j] != GC_est[i, j]:
                     rect = plt.Rectangle((j, i-0.05), 1, 1, facecolor='none', edgecolor='red', linewidth=1)
                     axarr[1].add_patch(rect)
 
         plt.show()
+
+    def evaluate_results(self, results):
+        precision, recall, thresholds1 = metrics.precision_recall_curve(self.dependencies['dep1'], results)        
+        fpr, tpr, thresholds2 = metrics.roc_curve(self.dependencies['dep1'], results)
+        return precision, recall, fpr, tpr

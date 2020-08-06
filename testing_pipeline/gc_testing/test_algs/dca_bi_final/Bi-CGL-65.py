@@ -10,10 +10,10 @@ import time
 
 import torch
 import torch.nn as nn
-import DCM_DeepCausal
+import test_algs.dca_bi_final.DCM_DeepCausal
 import numpy as np;
 #import importlib
-from utils import *;
+from test_algs.dca_bi_final.utils import *;
 
 import Optim
 import scipy

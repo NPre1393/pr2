@@ -1,7 +1,7 @@
 import torch
-import numpy as np;
+import numpy as np
 from torch.autograd import Variable
-from graph import *;
+from graph import *
 import time
 from scipy.io import loadmat
 from sklearn.preprocessing import StandardScaler
@@ -12,22 +12,22 @@ def normal_std(x):
 class Data_utility(object):
     # train and valid is the ratio of training set and validation set. test = 1 - train - valid
     def __init__(self, args):
-        self.cuda = args.cuda
-        self.model = args.model
-        self.P = args.window
-        self.h = args.horizon
-        self.y_dim = args.y_dim        
-        self.pre_win = args.pre_win 
+        self.cuda = args['cuda']
+        self.model = args['model']
+        self.P = args['window']
+        self.h = args['horizon']
+        self.y_dim = args['y_dim']        
+        self.pre_win = args['pre_win'] 
         
-        self.rawdat = loadmat(args.data)['expression']
-        print('data shape', self.rawdat.shape);
+        self.rawdat = args['alg_loader'].dataset.data.to_numpy()
+        print('data shape', self.rawdat.shape)
 
-        self.dat = np.zeros(self.rawdat.shape);
+        self.dat = np.zeros(self.rawdat.shape)
         self.n, self.m = self.dat.shape
-        if args.normalize == 1:            
-            self._normalized();
+        if args['normalize'] == 1:            
+            self._normalized()
 
-        self._bi_split(args.train, args.valid)
+        self._bi_split(args['train'], args['valid'])
  
 
     def _normalized(self):

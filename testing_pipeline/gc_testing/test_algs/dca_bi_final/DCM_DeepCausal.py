@@ -12,21 +12,21 @@ from torch.autograd import Variable
 class Model(nn.Module):
     def __init__(self, args, data):
         super(Model, self).__init__()
-        self.use_cuda = args.cuda
+        self.use_cuda = args['cuda']
 
         self.m = data.m
-        self.w = args.window
+        self.w = args['window']
 
         
-        self.batch_size = args.batch_size
-        self.lowrank = args.lowrank
+        self.batch_size = args['batch_size']
+        self.lowrank = args['lowrank']
 
-        self.pre_win = args.pre_win 
-        self.p_list = args.p_list
-        self.y_dim = args.y_dim
+        self.pre_win = args['pre_win']
+        self.p_list = args['p_list']
+        self.y_dim = args['y_dim']
         self.p_allsum = np.sum(self.p_list)
         self.len_p_list = len(self.p_list)
-        self.compress_p_list = args.compress_p_list
+        self.compress_p_list = args['compress_p_list']
         self.len_compress_p_list = len(self.compress_p_list)
 
         self.sparse_label = []
@@ -112,7 +112,7 @@ class Model(nn.Module):
         self.orthgonal_label.append(0)
         
         self.linears = nn.ModuleList(self.linears)
-        self.dropout = nn.Dropout(args.dropout)
+        self.dropout = nn.Dropout(args['dropout'])
 
 
     def forward(self, x_fw, x_bw):
