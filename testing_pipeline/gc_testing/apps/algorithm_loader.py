@@ -100,7 +100,7 @@ class Algorithm_Loader:
 
     def neural_gc(self, arguments):
         from test_algs.neural_gc.neural_gc import run_main as run_main_neural_gc
-        
+
         alg_arguments = {
             'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'hidden':10, 'lag':5, 'verbose':1, 'model':'mlp'
         }
@@ -109,9 +109,8 @@ class Algorithm_Loader:
             for arg in arguments.keys():
                 alg_arguments[arg] = arguments[arg]
 
-        run_main_neural_gc(alg_arguments)
-
-
+        GC = run_main_neural_gc(alg_arguments)
+        self.dataset.GC['neural_gc'] = GC
 
     def neunetnue(self, arguments):
         pass
