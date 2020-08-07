@@ -113,7 +113,19 @@ class Algorithm_Loader:
         self.dataset.GC['neural_gc'] = GC
 
     def neunetnue(self, arguments):
-        pass
+        from test_algs.neunetnue.neunetnue import run_main as run_main_neunetnue
+
+        alg_arguments = {
+            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'model':'mlp'
+        }
+
+        if arguments:
+            for arg in arguments.keys():
+                alg_arguments[arg] = arguments[arg]
+
+        GC = run_main_neunetnue(alg_arguments)
+        self.dataset.GC['neunetnue'] = GC
+
 
     def save_result(self, results, method):
         with open(self.result_path+method+'_results', 'wb') as handle:

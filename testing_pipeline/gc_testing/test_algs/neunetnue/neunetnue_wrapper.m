@@ -2,7 +2,7 @@ function [out_mat] = neunetnue_wrapper(data,numProc,saveData)
     numProcessors = numProc;
 
     % time series data should be n=time, m=variables
-    [n,m] = size(data)
+    [n,m] = size(data);
     %%  Defining the experiment parameters
     channels = 1:m;
     samplingRate         = 1;

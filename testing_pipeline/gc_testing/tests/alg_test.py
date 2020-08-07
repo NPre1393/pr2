@@ -17,7 +17,7 @@ print(alg_load)
 """
 #args_gcf = {"train_epochs": 100, "learning_rate": 0.01, "batch_size": 32, "p":200, "q":200}
 #args = {'data':dataset1.data, 'result_path':'result1', 'model_path':'result2', 'algorithms':{'gcf':0}}
-args = {'dataset':dataset1, 'result_path':'result1', 'model_path':'result2', 'algorithms':{'neural_gc':0}}
+args = {'dataset':dataset1, 'result_path':'result1', 'model_path':'result2', 'algorithms':{'neunetnue':0}}
 alg_load = Algorithm_Loader(args)
 #print(alg_load.dataset.dependencies)
 #print(alg_load.dataset.GC)
