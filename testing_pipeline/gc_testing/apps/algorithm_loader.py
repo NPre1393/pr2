@@ -42,9 +42,9 @@ class Algorithm_Loader:
         return repr
 
     def run_algorithms(self):
-        print(sys.path)
+        #print(sys.path)
         alg_keys = [*self.algorithms]
-        print(alg_keys)
+        #print(alg_keys)
         for alg in alg_keys:
             fn_tocall = 'self.{}({})'.format(alg, self.algorithms[alg])
             eval(fn_tocall)
@@ -116,7 +116,7 @@ class Algorithm_Loader:
         from test_algs.neunetnue.neunetnue import run_main as run_main_neunetnue
 
         alg_arguments = {
-            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'model':'mlp'
+            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'nr_of_procs':4
         }
 
         if arguments:
