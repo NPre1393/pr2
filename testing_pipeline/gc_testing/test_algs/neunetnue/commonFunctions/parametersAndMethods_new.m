@@ -73,7 +73,6 @@ function [output,params] = parametersAndMethods(data,sampling,pointsToDiscard,ch
     end
         parpool(numProcessors);
     end
-  
     output = callingMethods(data,params);
 
     if (numProcessors > 1)
