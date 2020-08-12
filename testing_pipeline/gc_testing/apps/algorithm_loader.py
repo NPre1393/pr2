@@ -71,7 +71,7 @@ class Algorithm_Loader:
             #arguments = {'alg_loader':self,"train_epochs": 50, "learning_rate": 0.01, "batch_size": 32,'inputbatchsize': int(self.dataset.n*0.9),'p': int(self.dataset.n*0.04),'q': int(self.dataset.n*0.04)}
             for arg in arguments.keys():
                 alg_arguments[arg] = arguments[arg]
-        #print(alg_arguments)
+        print(alg_arguments)
         G, graph_dict, gc_dict, GC = run_gcf(alg_arguments)
         tmp = np.squeeze(np.asarray(GC))
         GC = pd.DataFrame(data=tmp, index=gc_dict.keys(), columns=gc_dict.keys())
