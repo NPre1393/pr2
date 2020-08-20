@@ -10,6 +10,8 @@ from apps.data_generator import dataset
 
 
 """
+    test algorithms implemented
+
     gcf:        granger causal features
     bicgl:      bi-directional causal graph learning
     gc_ame:     granger-causal attentive mixture of experts
@@ -21,6 +23,18 @@ from apps.data_generator import dataset
 class Algorithm_Loader:
 
     def __init__(self, args):
+
+        """
+        Constructor for algorithm loader object
+        Args (required):
+        :param dataset(obj)             data generator dataset object 
+        
+        Args (optional):
+        :param result_path (string):    folder where GC results should be saved
+        :param model_path (string):     folder where algorithm models should be saved
+        :param algorithms (dict):       dict in format {'alg1':{{'param1':value,...}}}
+        """
+
         self.args = args
         self.dataset = self.args["dataset"]
         self.result_path = self.args["result_path"]
@@ -42,9 +56,7 @@ class Algorithm_Loader:
         return repr
 
     def run_algorithms(self):
-        #print(sys.path)
         alg_keys = [*self.algorithms]
-        #print(alg_keys)
         for alg in alg_keys:
             fn_tocall = 'self.{}({})'.format(alg, self.algorithms[alg])
             eval(fn_tocall)
