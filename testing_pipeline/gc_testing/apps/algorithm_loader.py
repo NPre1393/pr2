@@ -45,6 +45,7 @@ class Algorithm_Loader:
         else:
             self.algorithms = self.args["algorithms"]
         self.run_algorithms()
+        self.save_result()
 
     def __repr__(self):
         repr = 'Algorithm Loader Information\n'\
@@ -104,6 +105,7 @@ class Algorithm_Loader:
                 alg_arguments[arg] = arguments[arg]
 
         GC = run_bicgl(alg_arguments)
+        GC = pd.DataFrame(data=GC, index=self.dataset.data.columns.tolist(), columns=self.dataset.data.columns.tolist())
         self.dataset.GC['bigcl'] = GC
 
     def gc_ame(self, arguments):
@@ -122,6 +124,7 @@ class Algorithm_Loader:
                 alg_arguments[arg] = arguments[arg]
 
         GC = run_main_neural_gc(alg_arguments)
+        GC = pd.DataFrame(data=GC, index=self.dataset.data.columns.tolist(), columns=self.dataset.data.columns.tolist())
         self.dataset.GC['neural_gc'] = GC
 
     def neunetnue(self, arguments):
@@ -136,12 +139,12 @@ class Algorithm_Loader:
                 alg_arguments[arg] = arguments[arg]
 
         GC = run_main_neunetnue(alg_arguments)
+        GC = pd.DataFrame(data=GC, index=self.dataset.data.columns.tolist(), columns=self.dataset.data.columns.tolist())
         self.dataset.GC['neunetnue'] = GC
 
-
-    def save_result(self, results, method):
-        with open(self.result_path+method+'_results', 'wb') as handle:
-            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    def save_result(self):
+        with open(self.result_path+self.dataset.n+'_'+self.dataset.features+'_dataset_results', 'wb') as handle:
+            pickle.dump(self.dataset, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def save_model(self, model, method):
         with open(self.result_path+method+'_nnmodel', 'wb') as handle:

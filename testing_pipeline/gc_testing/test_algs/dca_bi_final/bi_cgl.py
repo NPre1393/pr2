@@ -248,8 +248,9 @@ def run_main(args):
         if val_loss < best_val:
             best_val = val_loss
             test_loss = evaluate(Data, Data.test_bi, model, evaluateL2, evaluateL1, args['batch_size'])
-
+    """
     NofGenes = model.m
+    
     GroundTruth = GroundTruth.reshape(NofGenes*NofGenes)
     G_best = G_best.reshape(NofGenes*NofGenes)
     precision, recall, thresholds1 = metrics.precision_recall_curve(GroundTruth, G_best)
@@ -258,4 +259,5 @@ def run_main(args):
     print(metrics.auc(recall, precision)) 
     print(metrics.auc(fpr, tpr))
     print(NofGenes)
+    """
     return G_best

@@ -61,5 +61,4 @@ def run_main(args):
         
         GC = cmlp.GC().cpu().data.numpy()
     
-    print(GC)
     return GC
