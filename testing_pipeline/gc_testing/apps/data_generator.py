@@ -18,8 +18,8 @@ class dataset():
             :param features (int):          number of time series/variables in dataset
             :param lag (int):               past time lag needed for generation of values  
             :param dep_dens (float):        range [0:1], % of ts causing other ts
-            :param dependencies (dict):     dependency structure should be dependencies['dependencies1']
-                                            if dependency anomaly data will be generated also add dependencies['dependencies2']
+            :param dependencies (dict):     dependency structure should be dependencies['dep1']
+                                            if dependency anomaly data will be generated also add dependencies['dep2']
             :param n (int):                 nr of time steps to generate
             :param dists (list):            type of distribution (0:gaussian, 1:bernoulli, 2:gamma, 3:poisson) from which to sample 
                                             data values
@@ -94,30 +94,31 @@ class dataset():
     # dependencies1 determine 0:n1 values
     # dependencies2 determine n1:n1+n2 values
     ###
-    def gen_dep_anom_data(self, n1, n2, caused_ts=0):
+    def gen_dep_anom_data(self, n1, n2):
         if n1+n2 != self.n:
             raise ValueError("n1+n2 need to be equal to n: {}+{}={}".format(n1,n2,self.n)) 
 
-        if not caused_ts:
+        if not self.caused_ts:
             self.caused_ts = np.random.randint(self.features/2)+1
-        else:
-            self.caused_t = caused_ts
 
         if not self.dependencies:
             self.dependencies['dep1'] = self.gen_anom_deps(self.features, self.dep_dens, self.caused_ts)
             self.dependencies['dep2']= self.gen_anom_deps(self.features, self.dep_dens, self.caused_ts)
         
+        dep1 = self.dependencies['dep1'].to_numpy()
+        dep2 = self.dependencies['dep2'].to_numpy()
+
         data = np.zeros([self.features, self.n])
         # row indcies of caused ts from dependency structure 1 and 2
-        rowIdx1, _ = np.where(self.dependencies['dep1'] == 1)
+        rowIdx1, _ = np.where(dep1 == 1)
         deps1 = np.unique(rowIdx1)
-        rowIdx2, _ = np.where(self.dependencies['dep2'] == 1)
+        rowIdx2, _ = np.where(dep2 == 1)
         deps2 = np.unique(rowIdx2)
         deps1_len = len(deps1)
         deps2_len = len(deps2)
         # number of dependencies per caused ts
-        deps1_per = np.sum(self.dependencies['dep1'], axis=1).astype(int)
-        deps2_per = np.sum(self.dependencies['dep2'], axis=1).astype(int)
+        deps1_per = np.sum(dep1, axis=1).astype(int)
+        deps2_per = np.sum(dep2, axis=1).astype(int)
 
         # generate time series that do not have any dependencies first -> they will generate the
         # caused time series
@@ -146,7 +147,7 @@ class dataset():
                 #if j < self.lag+1:
                 #    data[i,j] = np.random.normal(mu,sigma)
                 #if j > self.lag+1:
-                    res = (data[:,j-self.lag:j-1]).T*self.dependencies['dep1'][deps1[i]]
+                    res = (data[:,j-self.lag:j-1]).T*dep1[deps1[i]]
                     lagged_vals = np.zeros(coeffs.shape)
                     lagged_vals[:len(res[np.nonzero(res)])] = res[np.nonzero(res)]
                     data[i,j] = sum(coeffs*lagged_vals)
@@ -158,7 +159,7 @@ class dataset():
         for i in range(deps2_len):
             coeffs = np.array([round(x,1) for x in np.random.uniform(self.coeff_min, self.coeff_max, deps2_per[i]*self.lag)])            
             for j in range(n1,self.n):
-                res = (data[:,j-self.lag:j-1]).T*self.dependencies['dep2'][deps2[i]]
+                res = (data[:,j-self.lag:j-1]).T*dep2[deps2[i]]
                 lagged_vals = np.zeros(coeffs.shape)
                 lagged_vals[:len(res[np.nonzero(res)])] = res[np.nonzero(res)]
                 data[i,j] = sum(coeffs*lagged_vals)
@@ -179,14 +180,14 @@ class dataset():
         else:
             return beta
 
-    def gen_var_data(self, sparsity=0.3, beta_value=1.0, sd=0.1, seed=0):
+    def gen_var_data(self, sparsity=0.3, beta_value=1.0, sd=0.1):
         p = self.features
         lag = self.lag
         T = self.n
         sparsity = self.dep_dens
 
-        if seed is not None:
-            np.random.seed(seed)
+        if self.seed is not None:
+            np.random.seed(self.seed)
 
         # Set up coefficients and Granger causality ground truth.
         GC = np.eye(p, dtype=int)

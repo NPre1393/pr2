@@ -37,7 +37,10 @@ class Algorithm_Loader:
 
         self.args = args
         self.dataset = self.args["dataset"]
-        self.result_path = self.args["result_path"]
+        if not self.args["result_path"]:
+            self.result_path = ''
+        else:
+            self.result_path = self.args["result_path"]
         self.model_path = self.args["model_path"]
         if not self.args.get("algorithms"):
             self.algorithms = {'gcf':0, 'bicgl':0, 'gc_ame':0, 'neural_gc':0, 'neunetnue':0}
@@ -143,7 +146,12 @@ class Algorithm_Loader:
         self.dataset.GC['neunetnue'] = GC
 
     def save_result(self):
-        with open(self.result_path+self.dataset.n+'_'+self.dataset.features+'_dataset_results', 'wb') as handle:
+        file_name = self.result_path+self.dataset.n+'_'+self.dataset.features+'_dataset_results'
+        if os.path.exists(file_name):
+            for i in range(10000):
+                if not os.path.exists(file_name+'_'+i):
+                    file_name = file_name+'_'+i
+        with open(file_name, 'wb') as handle:
             pickle.dump(self.dataset, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def save_model(self, model, method):

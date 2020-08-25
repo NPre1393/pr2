@@ -11,7 +11,7 @@ dataset1.gen_var_data()
 
 # we can run a specific algorithm with specific parameters
 args_ngc = {"train_epochs": 1000, "learning_rate": 0.01, "batch_size": 32,'hidden':10, 'lag':5, 'verbose':1, 'model':'mlp'}
-args = {'dataset':dataset1, 'result_path':'result1', 'model_path':'result2', 'algorithms':{'neural_gc':args_ngc}}
+args = {'dataset':dataset1, 'result_path':'.', 'model_path':'result2', 'algorithms':{'neural_gc':args_ngc}}
 alg_load1 = Algorithm_Loader(args)
 # print out granger causality matrix
 print(alg_load1.dataset.GC)
