@@ -109,7 +109,7 @@ class Algorithm_Loader:
 
         GC = run_bicgl(alg_arguments)
         GC = pd.DataFrame(data=GC, index=self.dataset.data.columns.tolist(), columns=self.dataset.data.columns.tolist())
-        self.dataset.GC['bigcl'] = GC
+        self.dataset.GC['bicgl'] = GC
 
     def gc_ame(self, arguments):
         #from test_algs.gc_ame.gc_ame_alg import run_main as run_gc_ame
@@ -146,11 +146,12 @@ class Algorithm_Loader:
         self.dataset.GC['neunetnue'] = GC
 
     def save_result(self):
-        file_name = self.result_path+self.dataset.n+'_'+self.dataset.features+'_dataset_results'
+        file_name = self.result_path+str(self.dataset.n)+'_'+str(self.dataset.features)+'_dataset_results0.pkl'
         if os.path.exists(file_name):
             for i in range(10000):
-                if not os.path.exists(file_name+'_'+i):
-                    file_name = file_name+'_'+i
+                if not os.path.exists(file_name[:-5]+str(i)+'.pkl'):
+                    file_name = file_name[:-5]+str(i)+'.pkl'
+                    break
         with open(file_name, 'wb') as handle:
             pickle.dump(self.dataset, handle, protocol=pickle.HIGHEST_PROTOCOL)
 

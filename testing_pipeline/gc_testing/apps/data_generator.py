@@ -180,7 +180,7 @@ class dataset():
         else:
             return beta
 
-    def gen_var_data(self, sparsity=0.3, beta_value=1.0, sd=0.1):
+    def gen_var_data(self, beta_value=1.0, sd=0.1):
         p = self.features
         lag = self.lag
         T = self.n
@@ -227,10 +227,10 @@ class dataset():
 
         return dxdt
 
-    def gen_lorenz96_data(self, p=10, T=300, F=10.0, delta_t=0.1, sd=0.1, burn_in=1000,
+    def gen_lorenz96_data(self, F=10.0, delta_t=0.1, sd=0.1, burn_in=1000,
                         seed=0):
-        if seed is not None:
-            np.random.seed(seed)
+        if self.seed is not None:
+            np.random.seed(self.seed)
 
         p = self.features
         T = self.n
@@ -268,7 +268,10 @@ class dataset():
     def plot_output_anom(self):
         pass
 
-    def plot_output_GC(self, GC_est, GC):
+    def plot_output_GC(self, GC_est, GC=0):
+        if not GC:
+            GC = self.dependencies['dep1']
+
         print('True variable usage = %.2f%%' % (100 * np.mean(GC)))
         print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
         print('Accuracy = %.2f%%' % (100 * np.mean(GC == GC_est)))
@@ -298,7 +301,7 @@ class dataset():
 
         plt.show()
 
-    def evaluate_results(self, results):
-        precision, recall, thresholds1 = metrics.precision_recall_curve(self.dependencies['dep1'], results)        
-        fpr, tpr, thresholds2 = metrics.roc_curve(self.dependencies['dep1'], results)
+    def evaluate_results(self, GC_est):
+        precision, recall, _ = metrics.precision_recall_curve(self.dependencies['dep1'], results)        
+        fpr, tpr, _ = metrics.roc_curve(self.dependencies['dep1'], GC_est)
         return precision, recall, fpr, tpr
