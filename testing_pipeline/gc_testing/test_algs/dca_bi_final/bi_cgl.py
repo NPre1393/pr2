@@ -1,6 +1,8 @@
 # coding: utf-8
 import sys, os
-root_dir = os.path.dirname(sys.path[0])
+#root_dir = os.path.dirname(sys.path[0])
+root_dir = os.path.dirname(os.path.realpath(__file__))
+
 sys.path.append(root_dir)
 sys.path.append(root_dir+'/test_algs/dca_bi_final/')
 

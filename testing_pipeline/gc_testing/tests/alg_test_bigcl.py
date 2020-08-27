@@ -1,7 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(sys.path[0]))
 
-from apps.algorithms import Algorithm
 from apps.algorithm_loader import Algorithm_Loader
 import apps.data_generator as dg
 
@@ -16,7 +15,7 @@ args_bicgl = {
     'gpu':0, 'cuda':False, 'optim':'adam', 'lr':0.01, 'lr_decay':0.99, 'start_decay_at':100, 'weight_decay':0, 'normalize':1, 'train':0.9,
     'valid':0.09, 'lambda1':0.1, 'verbose':1
 }
-args = {'dataset':dataset1, 'result_path':'result1', 'model_path':'result2', 'algorithms':{'bicgl':args_bicgl}}
+args = {'dataset':dataset1, 'result_path':'./', 'model_path':'result2', 'algorithms':{'bicgl':args_bicgl}}
 alg_load1 = Algorithm_Loader(args)
 # print out granger causality matrix
 print(alg_load1.dataset.GC)

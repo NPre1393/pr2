@@ -1,5 +1,6 @@
 import sys, os
-root_dir = os.path.dirname(sys.path[0])
+#root_dir = os.path.dirname(sys.path[0])
+root_dir = os.path.dirname(os.path.realpath(__file__))
 
 if sys.platform == 'win32':
     neunet_dir = root_dir+'\\test_algs\\neunetnue'

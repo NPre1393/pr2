@@ -1,5 +1,7 @@
 import sys, os
 sys.path.append(os.path.dirname(sys.path[0]))
+root_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(root_dir)
 import numpy as np
 import pandas as pd
 import pickle
