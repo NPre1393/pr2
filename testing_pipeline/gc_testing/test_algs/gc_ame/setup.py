@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from distutils.core import setup
 from setuptools import find_packages
-
+"""
 setup(
     name='ame_starter',
     version='1.0.0',
@@ -36,3 +36,4 @@ setup(
         "numpy >= 1.14.1",
     ]
 )
+"""
