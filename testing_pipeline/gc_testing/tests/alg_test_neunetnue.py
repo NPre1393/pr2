@@ -10,7 +10,7 @@ dataset1 = dg.dataset(features=5)
 dataset1.gen_var_data()
 
 # we can run a specific algorithm with specific parameters
-args_nnn = {"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'nr_of_procs':4}
+args_nnn = {"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'nr_of_procs':4, 'platform':'matlab'}
 args = {'dataset':dataset1, 'result_path':'result1', 'model_path':'result2', 'algorithms':{'neunetnue':args_nnn}}
 alg_load1 = Algorithm_Loader(args)
 # print out granger causality matrix

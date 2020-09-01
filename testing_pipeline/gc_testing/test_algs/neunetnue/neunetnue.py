@@ -10,7 +10,6 @@ else:
 sys.path.append(root_dir)
 sys.path.append(neunet_dir)
 
-import matlab.engine
 import numpy as np
 
 def setup_paths_win(eng):
@@ -41,18 +40,26 @@ def setup_paths_posix(eng):
 
 
 def run_main(args):
-    eng = matlab.engine.start_matlab()
+    dat = args['alg_loader'].dataset.data.to_numpy()
+    outDir = args['alg_loader']["result_path"]
+
+    if args['platform'] == 'octave':
+        from oct2py import Oct2Py
+        eng = Oct2Py()
+        data = eng.transpose(eng.double(dat.tolist()))
+    else:
+        import matlab.engine
+        eng = matlab.engine.start_matlab()
+        data = matlab.double(dat.tolist())
+
     if sys.platform == 'win32':
         setup_paths_win(eng)
     else:
         setup_paths_posix(eng)
     #print(sys.path)
     #print(eng.path)
-    outDir = '.'
     nr_of_processors = args['nr_of_procs']
-    dat = args['alg_loader'].dataset.data.to_numpy()
     #print(dat)
-    data = matlab.double(dat.tolist())
     #print(data)
     #output = eng.neunetnue_wrapper(eng.transpose(data),nr_of_processors, outDir)
     output = eng.neunetnue_wrapper(data,nr_of_processors, outDir)
