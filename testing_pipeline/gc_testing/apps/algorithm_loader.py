@@ -136,13 +136,12 @@ class Algorithm_Loader:
         from test_algs.neunetnue.neunetnue import run_main as run_main_neunetnue
 
         alg_arguments = {
-            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'nr_of_procs':4
+            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'verbose':1, 'nr_of_procs':4, 'platform':'matlab'
         }
 
         if arguments:
             for arg in arguments.keys():
                 alg_arguments[arg] = arguments[arg]
-
         GC = run_main_neunetnue(alg_arguments)
         GC = pd.DataFrame(data=GC, index=self.dataset.data.columns.tolist(), columns=self.dataset.data.columns.tolist())
         self.dataset.GC['neunetnue'] = GC

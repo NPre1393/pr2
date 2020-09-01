@@ -37,7 +37,6 @@ def run_main(args):
     dat = args['alg_loader'].dataset.data.to_numpy()
     outDir = args['alg_loader'].result_path
     nr_of_processors = args['nr_of_procs']
-
     if args['platform'] == 'octave':
         from oct2py import Oct2Py
         eng = Oct2Py()
@@ -48,7 +47,6 @@ def run_main(args):
         #data = eng.transpose(eng.double(dat.tolist()))
         data = eng.double(dat.tolist())
         out = eng.neunetnue_wrapper_octave(data,nr_of_processors, outDir)
-
     else:
         import matlab.engine
         eng = matlab.engine.start_matlab()
