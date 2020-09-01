@@ -1,16 +1,9 @@
 import sys, os
 #root_dir = os.path.dirname(sys.path[0])
-root_dir = os.path.dirname(os.path.realpath(__file__))
+neunet_dir = os.path.dirname(os.path.realpath(__file__))
 
-if sys.platform == 'win32':
-    neunet_dir = root_dir+'\\test_algs\\neunetnue'
-else:
-    neunet_dir = root_dir+'/test_algs/neunetnue'
-
-sys.path.append(root_dir)
 sys.path.append(neunet_dir)
 
-import matlab.engine
 import numpy as np
 
 def setup_paths_win(eng):
@@ -41,22 +34,30 @@ def setup_paths_posix(eng):
 
 
 def run_main(args):
-    eng = matlab.engine.start_matlab()
-    if sys.platform == 'win32':
-        setup_paths_win(eng)
-    else:
-        setup_paths_posix(eng)
-    #print(sys.path)
-    #print(eng.path)
-    outDir = '.'
-    nr_of_processors = args['nr_of_procs']
     dat = args['alg_loader'].dataset.data.to_numpy()
-    #print(dat)
-    data = matlab.double(dat.tolist())
-    #print(data)
-    #output = eng.neunetnue_wrapper(eng.transpose(data),nr_of_processors, outDir)
-    output = eng.neunetnue_wrapper(data,nr_of_processors, outDir)
-    out = np.array(output._data).reshape(args['alg_loader'].dataset.features, args['alg_loader'].dataset.features)
+    outDir = args['alg_loader'].result_path
+    nr_of_processors = args['nr_of_procs']
+
+    if args['platform'] == 'octave':
+        from oct2py import Oct2Py
+        eng = Oct2Py()
+        if sys.platform == 'win32':
+            setup_paths_win(eng)
+        else:
+            setup_paths_posix(eng)        
+        #data = eng.transpose(eng.double(dat.tolist()))
+        data = eng.double(dat.tolist())
+        out = eng.neunetnue_wrapper_octave(data,nr_of_processors, outDir)
+
+    else:
+        import matlab.engine
+        eng = matlab.engine.start_matlab()
+        if sys.platform == 'win32':
+            setup_paths_win(eng)
+        else:
+            setup_paths_posix(eng)          
+        data = matlab.double(dat.tolist())
+        output = eng.neunetnue_wrapper(data,nr_of_processors, outDir)
+        out = np.array(output._data).reshape(args['alg_loader'].dataset.features, args['alg_loader'].dataset.features)
 
     return out
-    #np.savetxt(outDir+"\\neunetnue_output.csv", out, delimiter=",")

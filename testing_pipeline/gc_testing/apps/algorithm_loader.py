@@ -40,7 +40,7 @@ class Algorithm_Loader:
         self.args = args
         self.dataset = self.args["dataset"]
         if not self.args["result_path"]:
-            self.result_path = ''
+            self.result_path = './'
         else:
             self.result_path = self.args["result_path"]
         self.model_path = self.args["model_path"]
