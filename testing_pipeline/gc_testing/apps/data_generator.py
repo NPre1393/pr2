@@ -51,10 +51,10 @@ class dataset():
     def __repr__(self):
         deps = '\n'.join('{}:\n{}'.format(k, self.dependencies[k]) for k in self.dependencies.keys())
         repr = 'Dataset Information\n'\
-            'Features = {}, Lag = {}\n'\
+            'Features = {}, Lag = {}, n = {}\n'\
             'dists = {}\n'\
             'dependencies:\n{}'\
-            .format(self.features, self.lag, self.dists, deps)
+            .format(self.features, self.lag, self.n, self.dists, deps)
 
         return repr
 
@@ -271,12 +271,13 @@ class dataset():
     def plot_output_GC(self, GC_est, GC=0):
         if not GC:
             GC = self.dependencies['dep1']
-        precision, recall, fpr, tpr = self.evaluate_results(GC_est)
+        precision, recall, fbeta, fpr, tpr = self.evaluate_results(GC_est)
+        #print(precision, recall, fbeta, fpr, tpr)
         #print('True variable usage = %.2f%%' % (100 * np.mean(GC)))
         #print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
-        print('Accuracy = %.2f%%' % (100 * np.mean(GC == GC_est)))
-        print('Precision = %.2f%%' % (precision))
-        print('Recall = %.2f%%' % (recall))
+        print('Accuracy = %.2f%%' % (100 * np.mean(GC.to_numpy() == GC_est.to_numpy())))
+        print('Avg Precision = %.2f%%' % (100 * np.mean(precision)))
+        print('Avg Recall = %.2f%%' % (100 * np.mean(recall)))
 
         # Make figures
         fig, axarr = plt.subplots(1, 2, figsize=(16, 5))
@@ -293,7 +294,8 @@ class dataset():
         axarr[1].set_xlabel('Causal series')
         axarr[1].set_xticks([])
         axarr[1].set_yticks([])
-
+        GC = GC.to_numpy()
+        GC_est = GC_est.to_numpy()
         # Mark disagreements
         for i in range(self.features):
             for j in range(self.features):
@@ -304,6 +306,8 @@ class dataset():
         plt.show()
 
     def evaluate_results(self, GC_est):
-        precision, recall, _ = metrics.precision_recall_curve(self.dependencies['dep1'], results)        
-        fpr, tpr, _ = metrics.roc_curve(self.dependencies['dep1'], GC_est)
-        return precision, recall, fpr, tpr
+        ground_truth = self.dependencies['dep1'].to_numpy().reshape(self.features*self.features)
+        gc_est = GC_est.to_numpy().reshape(self.features*self.features)
+        precision, recall, fbeta, supp = metrics.precision_recall_fscore_support(ground_truth, gc_est)        
+        fpr, tpr, _ = metrics.roc_curve(ground_truth, gc_est)
+        return precision, recall, fbeta, fpr, tpr
