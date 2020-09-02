@@ -229,7 +229,7 @@ class dataset():
 
     def gen_lorenz96_data(self, F=10.0, delta_t=0.1, sd=0.1, burn_in=1000,
                         seed=0):
-        if self.seed is not None:
+        if not self.seed:
             np.random.seed(self.seed)
 
         p = self.features
@@ -271,10 +271,12 @@ class dataset():
     def plot_output_GC(self, GC_est, GC=0):
         if not GC:
             GC = self.dependencies['dep1']
-
-        print('True variable usage = %.2f%%' % (100 * np.mean(GC)))
-        print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
+        precision, recall, fpr, tpr = self.evaluate_results(GC_est)
+        #print('True variable usage = %.2f%%' % (100 * np.mean(GC)))
+        #print('Estimated variable usage = %.2f%%' % (100 * np.mean(GC_est)))
         print('Accuracy = %.2f%%' % (100 * np.mean(GC == GC_est)))
+        print('Precision = %.2f%%' % (precision))
+        print('Recall = %.2f%%' % (recall))
 
         # Make figures
         fig, axarr = plt.subplots(1, 2, figsize=(16, 5))
