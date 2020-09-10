@@ -5,6 +5,7 @@ from scipy.integrate import odeint
 import random as rd
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from sklearn import metrics
 
 class dataset():
@@ -263,6 +264,29 @@ class dataset():
         ax[1].plot(self.data[:100])
         ax[1].set_xlabel('t')
         ax[1].set_title('First 100 timesteps')
+        plt.show()
+
+    def plot_causeEffect(self, effect, causes=[]):
+        if not causes:
+            causes = [a for a in range(self.features)]
+            causes.remove(effect)
+            
+        total_causes = len(causes)
+        len_var = total_causes//2
+        len_var += total_causes % 2
+
+        nr_row, nr_col = (len_var, 2)
+        pos = range(1,total_causes+1)
+        fig = plt.figure(1)
+
+        for i in range(total_causes):
+            ax = fig.add_subplot(nr_row, nr_col, pos[i])
+            ax.plot(self.data[causes[i]], label=causes[i])
+            ax.plot(self.data[effect], label=effect)
+            ax.legend(loc='upper right')
+            ax.set_xlabel('t')
+            ax.set_title('Cause={}, Effect={}'.format(causes[i],effect))
+        fig.suptitle('Causes {} on Effected TS {}'.format(causes, effect))
         plt.show()
 
     def plot_output_anom(self):

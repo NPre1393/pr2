@@ -121,7 +121,7 @@ class Algorithm_Loader:
         from test_algs.neural_gc.neural_gc import run_main as run_main_neural_gc
 
         alg_arguments = {
-            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'hidden':10, 'lag':5, 'verbose':1, 'model':'mlp'
+            'alg_loader':self,"train_epochs": 10000, "learning_rate": 0.01, "batch_size": 32,'hidden':10, 'lag':5, 'verbose':1, 'model':'mlp', 'opt':'adam'
         }
 
         if arguments:
