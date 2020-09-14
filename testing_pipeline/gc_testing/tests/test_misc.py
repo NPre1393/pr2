@@ -19,5 +19,5 @@ ds.gen_var_data()
 #ds.plot_input()
 ds.GC = ds.dependencies['dep1']
 
-#ds.plot_causeEffect(effect=4, causes=[1,2,3,5])
-ds.plot_causeEffect(effect=4)
+ds.plot_causeEffect(effect=4, causes=[1,2,3,5])
+#ds.plot_causeEffect(effect=4)
