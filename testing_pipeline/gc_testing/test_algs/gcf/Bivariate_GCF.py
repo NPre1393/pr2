@@ -80,7 +80,7 @@ def construct_graph(rmse_ur, rmse_r):
     return G, graph_dict, gc_dict, nx.adjacency_matrix(G2).todense()
 
 def run_main(args):
-
+    print(args)
     df = args['alg_loader'].dataset.data
     allcols = df.columns.tolist()
 

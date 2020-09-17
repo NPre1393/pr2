@@ -3,6 +3,7 @@ sys.path.append(os.path.dirname(sys.path[0]))
 root_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(root_dir)
 import numpy as np
+from localconfig import config
 import pandas as pd
 import pickle
 
@@ -47,6 +48,8 @@ class Algorithm_Loader:
         if not self.args.get("algorithms"):
             self.algorithms = {'gcf':0, 'bicgl':0, 'gc_ame':0, 'neural_gc':0, 'neunetnue':0}
             self.args["algorithms"] = {'gcf':0, 'bicgl':0, 'gc_ame':0, 'neural_gc':0, 'neunetnue':0}
+        elif type(self.args.get("algorithms")) == str:
+            self.algorithms = self.parse_arguments(self.args.get("algorithms"))
         else:
             self.algorithms = self.args["algorithms"]
         self.run_algorithms()
@@ -60,6 +63,18 @@ class Algorithm_Loader:
             'algorithms to run: {}'\
             .format(self.dataset.data.shape, self.result_path, self.model_path, list(self.algorithms.keys()))
         return repr
+
+    def parse_arguments(self, cfg_file):
+        config.read(cfg_file)
+        cfg_dict = dict()
+
+        #print(config.sections())
+        for sec in config:
+            cfg_dict[sec] = dict()
+            for key in config.items(sec):
+                cfg_dict[sec][key[0]] = key[1]
+        #print(cfg_dict)
+        return cfg_dict
 
     def run_algorithms(self):
         alg_keys = [*self.algorithms]
@@ -89,7 +104,7 @@ class Algorithm_Loader:
             #arguments = {'alg_loader':self,"train_epochs": 50, "learning_rate": 0.01, "batch_size": 32,'inputbatchsize': int(self.dataset.n*0.9),'p': int(self.dataset.n*0.04),'q': int(self.dataset.n*0.04)}
             for arg in arguments.keys():
                 alg_arguments[arg] = arguments[arg]
-        print(alg_arguments)
+        #print(alg_arguments)
         G, graph_dict, gc_dict, GC = run_gcf(alg_arguments)
         tmp = np.squeeze(np.asarray(GC))
         GC = pd.DataFrame(data=tmp, index=gc_dict.keys(), columns=gc_dict.keys())

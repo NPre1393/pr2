@@ -1,7 +1,6 @@
 import sys, os
 sys.path.append(os.path.dirname(sys.path[0]))
 #print(sys.path)
-from apps.algorithms import Algorithm
 from apps.algorithm_loader import Algorithm_Loader
 import apps.data_generator as dg
 #from test_algs.gc_ame.gc_ame_alg import GC_AME
